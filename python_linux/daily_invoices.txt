@@ -1,0 +1,25 @@
+Restaurant Al-Quds - Daily Invoices File
+Date: 2024-09-15
+========================================
+
+INVOICE #001
+Customer: Ahmed Ali
+Order Type: In
+ITEMS ORDERED:
+Hummous: 2 dishes @ 15.00 = 30.00
+Falafel: 3 portions @ 8.00 = 24.00
+Tea: 1 cups @ 3.00 = 3.00
+INVOICE END
+========================================
+
+INVOICE #002
+Customer: Sara Mohammad
+Order Type: Out
+ITEMS ORDERED:
+Fool: 1 dishes @ 12.00 = 12.00
+Cola: 2 cans @ 5.00 = 10.00
+Water: 1 bottles @ 2.50 = 2.50
+INVOICE END
+========================================
+
+... (more invoices) ...
