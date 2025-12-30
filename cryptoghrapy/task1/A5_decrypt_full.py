@@ -1,0 +1,71 @@
+def majority(a, b, c):
+    return 1 if a + b + c >= 2 else 0
+
+class LFSR:
+    def __init__(self, name, length, taps, clock_bit, state):
+        self.name = name
+        self.length = length
+        self.taps = taps
+        self.clock_bit = clock_bit
+        self.state = [int(b) for b in state]
+
+    def shift(self):
+        feedback = 0
+        for t in self.taps:
+            feedback ^= self.state[t]
+        out_bit = self.state[-1]
+        self.state = [feedback] + self.state[:-1]
+        return out_bit
+
+    def get_clock_bit(self):
+        return self.state[self.clock_bit]
+
+    def get_output_bit(self):
+        return self.state[-1]
+
+def create_lfsrs(x_state, y_state, z_state):
+    LFSR_X = LFSR("X", 19, [13, 16, 17, 18], 8, x_state)
+    LFSR_Y = LFSR("Y", 22, [20, 21], 10, y_state)
+    LFSR_Z = LFSR("Z", 23, [7, 20, 21, 22], 10, z_state)
+    return LFSR_X, LFSR_Y, LFSR_Z
+
+def generate_keystream(x_state, y_state, z_state, num_bits):
+    X, Y, Z = create_lfsrs(x_state, y_state, z_state)
+    keystream = []
+    for _ in range(num_bits):
+        m = majority(X.get_clock_bit(), Y.get_clock_bit(), Z.get_clock_bit())
+        if X.get_clock_bit() == m:
+            X.shift()
+        if Y.get_clock_bit() == m:
+            Y.shift()
+        if Z.get_clock_bit() == m:
+            Z.shift()
+        ks_bit = X.get_output_bit() ^ Y.get_output_bit() ^ Z.get_output_bit()
+        keystream.append(ks_bit)
+    return keystream
+
+def bits_to_bytes(bits):
+    return bytes(int(''.join(map(str, bits[i:i+8])), 2) for i in range(0, len(bits), 8))
+
+if __name__ == "__main__":
+    with open("initial_states.txt") as f:
+        x_state = f.readline().strip()
+        z_state = f.readline().strip()
+
+    with open("recovered_y_state.txt") as f:
+        y_state = f.read().strip()
+
+    # ⚠️ الملف يحتوي على bits نصية: '0' و '1'
+    with open("ciphertext.bin", "r") as f:
+        ciphertext_bits = [int(b) for b in f.read().strip()]
+
+    num_bits = len(ciphertext_bits)
+    keystream = generate_keystream(x_state, y_state, z_state, num_bits)
+
+    plaintext_bits = [c ^ k for c, k in zip(ciphertext_bits, keystream)]
+    plaintext_bytes = bits_to_bytes(plaintext_bits)
+
+    with open("recovered_plaintext.txt", "wb") as f:
+        f.write(plaintext_bytes)
+
+    print("✅ Plaintext recovered and saved to recovered_plaintext.txt")
